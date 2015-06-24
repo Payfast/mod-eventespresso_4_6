@@ -14,6 +14,12 @@ class EEG_Payfast extends EE_Offsite_Gateway
 
     protected $_currencies_supported = array('ZAR');
 
+    public function __construct() 
+    {
+        $this->set_uses_separate_IPN_request( true ) ;
+        parent::__construct();
+    }
+
     public function set_settings($settings_array)
     {
         parent::set_settings($settings_array);
