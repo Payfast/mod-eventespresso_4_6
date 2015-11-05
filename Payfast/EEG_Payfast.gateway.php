@@ -72,6 +72,7 @@ class EEG_Payfast extends EE_Offsite_Gateway
         }
 
         $redirect_args['signature'] = md5( $pfOutput );
+        $redirect_args['user_agent'] = 'EventEspresso 4.8';
 
         $redirect_args = apply_filters("FHEE__EEG_Payfast__set_redirection_info__arguments", $redirect_args);
 
@@ -163,7 +164,7 @@ class EEG_Payfast extends EE_Offsite_Gateway
             pflog( 'Check data against internal order' );
 
             // Check order amount
-            if( !pfAmountsEqual( $pfData['amount_gross'], $transaction->remaining() ) )
+            if( !pfAmountsEqual( $pfData['amount_gross'], $payment->amount() ) )
             {
                 $pfError = true;
                 $pfErrMsg = PF_ERR_AMOUNT_MISMATCH;
@@ -171,11 +172,6 @@ class EEG_Payfast extends EE_Offsite_Gateway
 
         }
 
-        // verify there's payment data that's been sent
-    //       if( empty( $pfData['payment_status'] ) || empty( $pfData['pf_payment_id'] ) )
-    //       {
-    //           return null;
-    //       }
         $payment = $this->_pay_model->get_payment_by_txn_id_chq_nmbr( $pfData['pf_payment_id'] );
         if ( !$payment )
         {
@@ -191,23 +187,29 @@ class EEG_Payfast extends EE_Offsite_Gateway
 
 
         //ok, well let's process this payment then!
-        if ( $pfData['payment_status'] == 'COMPLETE' )
+        if ( !$pfError && !$pfDone )
         {
-            pflog( '- Complete' );
-            pflog( 'PayFast transaction id: '.$pfData['pf_payment_id'] );
-            $status = $this->_pay_model->approved_status();//approved
-            $gateway_response = __( 'Your payment is approved.', 'event_espresso' );
+            pflog('check order and update payment status');
+
+            if ($pfData['payment_status'] == 'COMPLETE') {
+                pflog('- Complete');
+                pflog('PayFast transaction id: ' . $pfData['pf_payment_id']);
+                $status = $this->_pay_model->approved_status();//approved
+                $gateway_response = __('Your payment is approved.', 'event_espresso');
+            } elseif ($pfData['payment_status'] == 'Pending') {
+                $status = $this->_pay_model->pending_status();//approved
+                $gateway_response = __('Your payment is in progress. Another message will be sent when payment is approved.', 'event_espresso');
+            } else {
+                $status = $this->_pay_model->declined_status();//declined
+                $gateway_response = __('Your payment has been declined.', 'event_espresso');
+            }
         }
-        elseif ( $pfData['payment_status'] == 'Pending' )
+
+        if( $pfError )
         {
-            $status = $this->_pay_model->pending_status();//approved
-            $gateway_response = __( 'Your payment is in progress. Another message will be sent when payment is approved.', 'event_espresso' );
+            pflog( 'Error occurred: '. $pfErrMsg );
         }
-        else
-        {
-            $status = $this->_pay_model->declined_status();//declined
-            $gateway_response = __( 'Your payment has been declined.', 'event_espresso' );
-        }
+
         //check if we've already processed this payment
         if ( !empty( $payment ) )
         {
