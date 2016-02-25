@@ -45,7 +45,7 @@ class EEG_Payfast extends EE_Offsite_Gateway
             'merchant_id' => ( $this->_debug_mode ? '10000861' : $this->_payfast_merchant_id ),
             'merchant_key' => ( $this->_debug_mode ? '1pelravrwmo8e' : $this->_payfast_merchant_key ),
             'return_url' => $return_url,
-            'cancel_url' => /*$cancel_url*/site_url( $path, $scheme ),
+            'cancel_url' => $cancel_url,
             'notify_url' => $notify_url,
             'name_first' => $primary_attendee->fname(),
             'name_last' => $primary_attendee->lname(),
