@@ -122,8 +122,11 @@ class EEG_Payfast extends EE_Offsite_Gateway
         {
             pflog( 'Verify security signature' );
 
+            $passPhrase = $this->_payfast_passphrase;
+            $pfPassPhrase = empty( $passPhrase ) ? null : $passPhrase;
+
             // If signature different, log for debugging
-            if( !pfValidSignature( $pfData, $pfParamString ) )
+            if( !pfValidSignature( $pfData, $pfParamString, $pfPassPhrase ) )
             {
                 $pfError = true;
                 $pfErrMsg = PF_ERR_INVALID_SIGNATURE;
@@ -158,6 +161,12 @@ class EEG_Payfast extends EE_Offsite_Gateway
             }
         }
 
+        $payment = $this->_pay_model->get_payment_by_txn_id_chq_nmbr( $pfData['pf_payment_id'] );
+        if ( !$payment )
+        {
+            $payment = $transaction->last_payment();
+        }
+
         //// Check data against internal order
         if( !$pfError && !$pfDone )
         {
@@ -172,11 +181,6 @@ class EEG_Payfast extends EE_Offsite_Gateway
 
         }
 
-        $payment = $this->_pay_model->get_payment_by_txn_id_chq_nmbr( $pfData['pf_payment_id'] );
-        if ( !$payment )
-        {
-            $payment = $transaction->last_payment();
-        }
         //ok, then validate the IPN. Even if we've already processed this payment, let PayFast know we don't want to hear from them anymore!
         if ( !$this->validate_ipn( $update_info, $payment ) )
         {

@@ -145,7 +145,7 @@ function pfGetData()
  * 
  * @author Jonathan Smit
  */
-function pfValidSignature( $pfData = null, &$pfParamString = null )
+function pfValidSignature( $pfData = null, &$pfParamString = null, $pfPassPhrase = null )
 {
     // Dump the submitted variables and calculate security signature
     foreach( $pfData as $key => $val )
@@ -162,7 +162,17 @@ function pfValidSignature( $pfData = null, &$pfParamString = null )
 
     // Remove the last '&' from the parameter string
     $pfParamString = substr( $pfParamString, 0, -1 );
-    $signature = md5( $pfParamString );
+
+    if( is_null( $pfPassPhrase ) ||  ADDONS_PAYMENT_PAYFAST_TEST_MODE == 1 )
+    {
+        $tempParamString = $pfParamString;
+    }
+    else
+    {
+        $tempParamString = $pfParamString."&passphrase=".urlencode( $pfPassPhrase );
+    }
+
+    $signature = md5( $tempParamString );
     
     $result = ( $pfData['signature'] == $signature );
 
