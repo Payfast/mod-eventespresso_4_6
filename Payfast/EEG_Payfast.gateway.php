@@ -145,7 +145,7 @@ class EEG_Payfast extends EE_Offsite_Gateway
             }
         }
 
-        $pfHost = $PayFast_sandbox ? 'sandbox.payfast.co.za' : 'www.payfast.co.za';
+        $pfHost = $this->_debug_mode ? 'sandbox.payfast.co.za' : 'www.payfast.co.za';
 
         //// Verify data received
         if( !$pfError )
