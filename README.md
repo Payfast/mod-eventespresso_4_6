@@ -12,9 +12,9 @@ INTEGRATION:
 
 
 ******************************************************************************
-*                                                                            *
-*    Please see the URL below for more information concerning this module:   *
-*                                                                            *
-*            http://www.payfast.co.za/shopping-carts/event-espresso          *
-*                                                                            *
+
+    Please see the URL below for more information concerning this module:
+
+            http://www.payfast.co.za/shopping-carts/event-espresso
+
 ******************************************************************************
